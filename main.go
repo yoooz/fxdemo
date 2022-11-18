@@ -18,7 +18,7 @@ func main() {
 		}),
 		fx.Provide(
 			NewHTTPServer,
-			NewEchoHandler,
+			fx.Annotate(NewEchoHandler, fx.As(new(Route))),
 			NewServeMux,
 			zap.NewExample,
 		),
@@ -59,8 +59,17 @@ func (h *EchoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewServeMux(echo *EchoHandler) *http.ServeMux {
+func NewServeMux(route Route) *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.Handle("/echo", echo)
+	mux.Handle(route.Pattern(), route)
 	return mux
+}
+
+type Route interface {
+	http.Handler
+	Pattern() string
+}
+
+func (*EchoHandler) Pattern() string {
+	return "/echo"
 }

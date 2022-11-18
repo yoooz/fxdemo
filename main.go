@@ -49,8 +49,8 @@ type EchoHandler struct {
 	log *zap.Logger
 }
 
-func NewEchoHandler() *EchoHandler {
-	return &EchoHandler{}
+func NewEchoHandler(log *zap.Logger) *EchoHandler {
+	return &EchoHandler{log: log}
 }
 
 func (h *EchoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

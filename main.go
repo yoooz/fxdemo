@@ -2,11 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"net"
 	"net/http"
 
+	"github.com/yoooz/fxdemo/handler"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
@@ -19,8 +18,8 @@ func main() {
 		}),
 		fx.Provide(
 			NewHTTPServer,
-			AsRoute(NewEchoHandler),
-			AsRoute(NewHelloHandler),
+			handler.AsRoute(handler.NewEchoHandler),
+			handler.AsRoute(handler.NewHelloHandler),
 			fx.Annotate(
 				NewServeMux,
 				fx.ParamTags(`group:"routes"`),
@@ -50,68 +49,10 @@ func NewHTTPServer(lc fx.Lifecycle, mux *http.ServeMux, log *zap.Logger) *http.S
 	return srv
 }
 
-type EchoHandler struct {
-	log *zap.Logger
-}
-
-func NewEchoHandler(log *zap.Logger) *EchoHandler {
-	return &EchoHandler{log: log}
-}
-
-func (h *EchoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if _, err := io.Copy(w, r.Body); err != nil {
-		h.log.Warn("Failed to handle request", zap.Error(err))
-	}
-}
-
-func NewServeMux(routes []Route) *http.ServeMux {
+func NewServeMux(routes []handler.Route) *http.ServeMux {
 	mux := http.NewServeMux()
 	for _, route := range routes {
 		mux.Handle(route.Pattern(), route)
 	}
 	return mux
-}
-
-type Route interface {
-	http.Handler
-	Pattern() string
-}
-
-func (*EchoHandler) Pattern() string {
-	return "/echo"
-}
-
-type HelloHandler struct {
-	log *zap.Logger
-}
-
-func NewHelloHandler(log *zap.Logger) *HelloHandler {
-	return &HelloHandler{log: log}
-}
-
-func (*HelloHandler) Pattern() string {
-	return "/hello"
-}
-
-func (h *HelloHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		h.log.Error("Failed to read request", zap.Error(err))
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if _, err := fmt.Fprintf(w, "Hello, %s\n", body); err != nil {
-		h.log.Error("Failed to write response", zap.Error(err))
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-func AsRoute(f any) any {
-	return fx.Annotate(
-		f,
-		fx.As(new(Route)),
-		fx.ResultTags(`group:"routes"`),
-	)
 }

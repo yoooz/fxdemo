@@ -12,7 +12,7 @@ type HelloHandler struct {
 	log *zap.Logger
 }
 
-func NewHelloHandler(log *zap.Logger) *HelloHandler {
+func newHelloHandler(log *zap.Logger) *HelloHandler {
 	return &HelloHandler{log: log}
 }
 

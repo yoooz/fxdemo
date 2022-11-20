@@ -16,10 +16,9 @@ func main() {
 		fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
 			return &fxevent.ZapLogger{Logger: log}
 		}),
+		handler.Modules(),
 		fx.Provide(
 			NewHTTPServer,
-			handler.AsRoute(handler.NewEchoHandler),
-			handler.AsRoute(handler.NewHelloHandler),
 			fx.Annotate(
 				NewServeMux,
 				fx.ParamTags(`group:"routes"`),

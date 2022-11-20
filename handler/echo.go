@@ -11,7 +11,7 @@ type EchoHandler struct {
 	log *zap.Logger
 }
 
-func NewEchoHandler(log *zap.Logger) *EchoHandler {
+func newEchoHandler(log *zap.Logger) *EchoHandler {
 	return &EchoHandler{log: log}
 }
 

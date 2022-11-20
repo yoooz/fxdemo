@@ -11,10 +11,17 @@ type Route interface {
 	Pattern() string
 }
 
-func AsRoute(f any) any {
+func asRoute(f any) any {
 	return fx.Annotate(
 		f,
 		fx.As(new(Route)),
 		fx.ResultTags(`group:"routes"`),
+	)
+}
+
+func Modules() fx.Option {
+	return fx.Provide(
+		asRoute(newEchoHandler),
+		asRoute(newHelloHandler),
 	)
 }
